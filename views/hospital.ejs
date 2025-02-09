@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Socket.io -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <%- include('./partials/head') %>
+</head>
+<body class="w-full h-full">
+    <%- include('./partials/nav') %>
+
+    <script>
+        const socket = io();
+        const audio = new Audio('/ping.mp3'); // Ensure the correct path
+        let map, marker;
+
+        // Register this client as "police"
+        socket.emit('register', 'hospital');
+
+        // Listen for police-specific alerts
+        socket.on('hospital_call', (data) => {
+            console.log(data);
+            alert(`🚨 Emergency Alert 🚨\n\n${data}`);
+            audio.play();
+        });
+
+        // Function to initialize the map
+        function initializeMap(lat, lon) {
+            // Check if map already exists
+            if (!map) {
+                map = L.map('map').setView([lat, lon], 13); // Initial zoom level 13
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            }
+
+            // If marker exists, update position; otherwise, create it
+            if (marker) {
+                marker.setLatLng([lat, lon]);
+            } else {
+                marker = L.marker([lat, lon]).addTo(map).bindPopup("User's Location").openPopup();
+            }
+        }
+
+        // Listen for position updates
+        socket.on('position_hospital', (data) => {
+            console.log("User location received:", data);
+
+            const { lati, long } = data;
+            initializeMap(lati, long);
+
+            // Append alert
+            const alertList = document.getElementById("alert-list");
+            alertList.innerHTML += `<li class="list-group-item">🚨 Police</li>`;
+        });
+    </script>
+
+    <%- include('./partials/scripts') %>
+
+    <div class="w-full h-full flex justify-between items-center">
+        <div class="div1 w-full h-[2/3] pt-4 m-2 ">
+            <div class="text-black text-2xl pl-2">User's location</div>
+            <div id="map" class="w-full h-[500px] zoom-30"></div>
+        </div>
+    </div>
+</body>
+</html>
