@@ -6,137 +6,9 @@
         <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<!--      
-        <style>
-    
-            .container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                margin-top: 20px;
-            }
-    
-            .info-card {
-                background: white;
-                padding: 15px;
-                border-radius: 10px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                margin-bottom: 20px;
-                width: 300px;
-            }
-    
-            .voice-button {
-                width: 80px;
-                height: 80px;
-                background-color: #4CAF50;
-                color: white;
-                border-radius: 50%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 24px;
-                cursor: pointer;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-                transition: background-color 0.3s, transform 0.2s;
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-            }
-    
-            .voice-button:hover {
-                background-color: #45a049;
-                transform: scale(1.05);
-            }
-    
-            .voice-button:active {
-                transform: scale(0.95);
-            }
-    
-            .card-container {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 20px;
-                margin-top: 20px;
-            }
-    
-            .card {
-                width: 250px;
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                text-align: center;
-                transition: transform 0.3s;
-            }
-    
-            .card:hover {
-                transform: scale(1.05);
-            }
-    
-            .btn-primary {
-                background-color: #007bff;
-                color: white;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 5px;
-                text-decoration: none;
-                transition: background 0.3s;
-            }
-    
-            .btn-primary:hover {
-                background-color: #0056b3;
-            }
-    
-            .scenario-container, .steps-container {
-                max-width: 600px;
-                margin: auto;
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }
-            .scenario-btn {
-                display: block;
-                width: 100%;
-                margin: 10px 0;
-                padding: 15px;
-                font-size: 18px;
-                border: none;
-                background: #007BFF;
-                color: white;
-                border-radius: 5px;
-                cursor: pointer;
-            }
-            .scenario-btn:hover {
-                background: #0056b3;
-            }
-            .steps-container {
-                display: none;
-            }
-            .nav-btn {
-                margin-top: 20px;
-                padding: 10px 20px;
-                font-size: 16px;
-                border: none;
-                cursor: pointer;
-                border-radius: 5px;
-            }
-            .next-btn {
-                background: #28a745;
-                color: white;
-            }
-            .prev-btn {
-                background: #ffc107;
-            }
-            .close-btn {
-                background: #dc3545;
-                color: white;
-                margin-top: 10px;
-            }
-        </style> -->
+
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body className="bg-gray-100 text-gray-900">
     <%- include('./partials/nav') %>
 
     <!-- Weather Info Card -->
@@ -226,69 +98,154 @@
 
         // SOCKET IO SCRIPT
         const socket = io();
+        // let lat , lon ; 
 
-// function LocationGet(callback) {
-//     if (!navigator.geolocation) {
-//         console.error("Geolocation is not supported by this browser.");
-//         callback(null, null);
-//         return;
-//     }
 
-//     navigator.geolocation.getCurrentPosition(
-//         (position) => {
-//             const { latitude, longitude } = position.coords;
-//             callback(latitude, longitude);
-//         },
-//         (error) => {
-//             console.error("Error fetching location:", error);
-//             callback(null, null);
-//         }
-//     );
-// }
-
-// function sendMessageTo(role, alertType) {
-//     LocationGet((latitude, longitude) => {
-//         socket.emit('alert', { 
-//             type: alertType, 
-//             latitude, 
-//             longitude 
-//         });
-//     });
-// }
-
-function sendMessageToPolice() {
+        async function sendMessageToPolice() {
             socket.emit('register', 'police');  // Change to 'police' if needed
             socket.emit('alert','police_call');
+            socket.emit('position' , {lati, long, latiDis,longDis,key}); 
             const key = 'police' 
-            socket.emit('position' , {lati, long, latiDis,longDis,key});      
-        }
+            let la = lati; 
+            let lg = long; 
 
-        function sendMessageToNdrf() {
+        
+            
+            await  fetch('/getpos', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ la, lg, key })
+            })
+            .then(response => {
+                 if (response.ok) 
+                 {
+                     console.log('Item added to cart successfully.');
+                     console.log(itemId) ; 
+
+                 } 
+                 else {
+                      console.error('Failed to add item to cart.');
+                 }
+            })
+             .catch(err => console.error('Error:', err));
+            
+         }
+
+
+
+       async  function sendMessageToNdrf() {
             socket.emit('register', 'ndrf'); 
             socket.emit('alert', 'ndrf_call'); 
             const key = 'ndrf' 
-            socket.emit('position' , {lati, long, latiDis,longDis,key});      
+            socket.emit('position' , {lati, long, latiDis,longDis,key});   
+            let la = lati; 
+            let lg = long; 
+
+        
+            await  fetch('/getpos', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ la, lg, key })
+            })
+            .then(response => {
+                 if (response.ok) 
+                 {
+                     console.log('Item added to cart successfully.');
+                     console.log(itemId) ; 
+
+                 } 
+                 else {
+                      console.error('Failed to add item to cart.');
+                 }
+            })
+             .catch(err => console.error('Error:', err));
       
         }
-        function sendMessageToHospital() {
+        async function sendMessageToHospital() {
             socket.emit('register', 'hospital'); 
             socket.emit('alert', 'hospital_call');
             const key = 'hospital'   
-            socket.emit('position' , {lati, long, latiDis,longDis,key});      
+            socket.emit('position' , {lati, long, latiDis,longDis,key}); 
+            
+            let la = lati; 
+            let lg = long; 
+
+        
+            await  fetch('/getpos', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ la, lg, key })
+            })
+            .then(response => {
+                 if (response.ok) 
+                 {
+                     console.log('Item added to cart successfully.');
+                     console.log(itemId) ; 
+
+                 } 
+                 else {
+                      console.error('Failed to add item to cart.');
+                 }
+            })
+             .catch(err => console.error('Error:', err));
 
         }
-        function sendMessageToFire() {
+        async function sendMessageToFire() {
             socket.emit('register', 'fire'); 
             socket.emit('alert', 'fire_call'); 
             const key = 'fire'   
-            socket.emit('position' , {lati, long, latiDis,longDis,key});      
+            socket.emit('position' , {lati, long, latiDis,longDis,key});
+            
+            let la = lati; 
+            let lg = long; 
+
+        
+            await  fetch('/getpos', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ la, lg, key })
+            })
+            .then(response => {
+                 if (response.ok) 
+                 {
+                     console.log('Item added to cart successfully.');
+                     console.log(itemId) ; 
+
+                 } 
+                 else {
+                      console.error('Failed to add item to cart.');
+                 }
+            })
+             .catch(err => console.error('Error:', err));
 
         }
-        function sendMessageToArmy() {
+        async function sendMessageToArmy() {
             socket.emit('register', 'army'); 
             socket.emit('alert', 'army_call');
             const key = 'army'  
-            socket.emit('position' , {lati, long, latiDis,longDis,key});      
+            socket.emit('position' , {lati, long, latiDis,longDis,key});  
+            
+            let la = lati; 
+            let lg = long; 
+
+        
+            await  fetch('/getpos', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ la, lg, key })
+            })
+            .then(response => {
+                 if (response.ok) 
+                 {
+                     console.log('Item added to cart successfully.');
+                     console.log(itemId) ; 
+
+                 } 
+                 else {
+                      console.error('Failed to add item to cart.');
+                 }
+            })
+             .catch(err => console.error('Error:', err));
       
         }
         
@@ -311,6 +268,7 @@ function sendMessageToPolice() {
         async function gotLocation(position) {
             const latitude = position.coords.latitude;
             const longitude = position.coords.longitude;
+            console.log(position)
             console.log(latitude, longitude)
             lati =  latitude ;
             long =  longitude;
@@ -573,7 +531,8 @@ function sendMessageToPolice() {
         
         let currentScenario = "";
         let currentStep = 0;
-function startScenario(scenario) {
+function startScenario(scenario) 
+{
     if (!steps[scenario]) {
         console.error("Scenario not found:", scenario);
         return;

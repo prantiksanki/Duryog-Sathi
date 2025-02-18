@@ -20,10 +20,21 @@
 <body class="w-full h-full">
     <%- include('./partials/nav') %>
 
+    <div class="w-full h-full flex justify-between items-center">
+        <div class=" div1 w-full h-1 pt-1 m-2">
+            <div class="text-black text-2xl pl-2">User's location</div>
+
+            <div id="map" class="w-full h-[700px] zoom-30"></div>
+        </div>
+    </div>
+
+      
+
     <script>
         const socket = io();
         const audio = new Audio('ping.mp3'); // Ensure the correct path
-        let map, marker;
+        let map;
+        let markers = []; // Store multiple markers
 
         // Register this client as "police"
         socket.emit('register', 'police');
@@ -36,41 +47,111 @@
         });
 
         // Function to initialize the map
-        function initializeMap(lat, lon) {
-            // Check if map already exists
+        function initializeMap(positions) {
             if (!map) {
-                map = L.map('map').setView([lat, lon], 30); // Initial zoom level 13
+                map = L.map('map').setView([50, 78], 15); // Default zoom level & center (India)
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             }
 
-            // If marker exists, update position; otherwise, create it
-            if (marker) {
-                marker.setLatLng([lat, lon]);
-            } else {
-                marker = L.marker([lat, lon]).addTo(map).bindPopup("User's Location").openPopup();
-            }
+            // Remove existing markers before updating
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            positions.forEach(pos => {
+                const marker = L.marker([pos.lat, pos.lng])
+                    .addTo(map)
+                    .bindPopup("Affected Area")
+                    .openPopup();
+                markers.push(marker);
+            });
         }
 
-        // Listen for position updates
+        // Load initial positions
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            const positions = <%- JSON.stringify(allPositions || []) %>; // Ensure it's a valid array
+            if (positions.length > 0) {
+                initializeMap(positions);
+            }
+        });
+
+        // Listen for position updates from the server
         socket.on('position_police', (data) => {
             console.log("User location received:", data);
 
-            const { lati, long } = data;
-            initializeMap(lati, long);
+            const { lat, lng } = data;
+            initializeMap([{ lat, lng }]);
 
             // Append alert
             const alertList = document.getElementById("alert-list");
-            alertList.innerHTML += `<li class="list-group-item">🚨 Police</li>`;
+            if (alertList) {
+                alertList.innerHTML += `<li class="list-group-item">🚨 Police Alert at ${lat}, ${lng}</li>`;
+            }
         });
+
+
+       function statusInactive()
+       {
+         alert("Status Inactive");
+       }
+
+
     </script>
+
+<br>   
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+<br>    
+
+<% if (locals.allPositions) { %>
+    <% allPositions.forEach(pos => { %>
+      <ul class="list-none p-4">
+        <li class="bg-white shadow-lg rounded-lg p-4 mb-4 border border-gray-200">
+          <p class="text-lg font-semibold text-gray-700">
+            <b class="text-blue-500">Location:</b> <span class="text-gray-600"><%= pos.lat %></span>
+          </p>
+          <p class="text-lg font-semibold text-gray-700">
+            <b class="text-red-500">Affected Area:</b> <span class="text-gray-600"><%= pos.lng %></span>
+          </p>
+          <button onclick = "statusInactive()" class="mt-3 px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition">
+            Case Solved
+          </button>
+        </li>
+      </ul>
+    <% }) %>
+  <% } %>
+  
 
     <%- include('./partials/scripts') %>
 
-    <div class="w-full h-full flex justify-between items-center">
-        <div class="div1 w-full h-[2/3] pt-4 m-2 ">
-            <div class="text-black text-2xl pl-2">User's location</div>
-            <div id="map" class="w-full h-[500px] zoom-30"></div>
-        </div>
-    </div>
 </body>
 </html>
