@@ -5,6 +5,7 @@ const { Server } = require('socket.io');
 const mongoose = require("mongoose") ; 
 const positionModel = require("./model/position")
 const app = express();
+const axios = require('axios'); 
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -76,8 +77,9 @@ app.get('/police',async (req, res) =>
 {
 const allPositions = await positionModel.find({authority : "police"})
 // console.log(allPositions) ; 
-    res.render('police' , {
-        allPositions,
+
+res.render('police' , {
+        allPositions
     })
 });
 app.get('/fire', (req, res) => res.render('fire'));
@@ -99,8 +101,18 @@ app.post ('/getpos', async (req,res) =>
 })
 
 
+app.post("/removefromlist" , async (req, res) =>
+{
+    const {lat,lng , posName} = req.body ;
+    // await positionModel.deleteOne({lat:lat, lng:lng, authority:posName})
+
+})
 
 // Start the server
 server.listen(port, () => {
     console.log(`🚀 Server started on port ${port}`);
 });
+
+
+
+
